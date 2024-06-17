@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Posting</title>
+</head>
+<body>
+    <h1>Post a Job</h1>
+    <form id="jobForm">
+        <label for="title">Job Title:</label><br>
+        <input type="text" id="title" name="title" required><br><br>
+        
+        <label for="company">Company:</label><br>
+        <input type="text" id="company" name="company" required><br><br>
+        
+        <label for="skills">Skills (comma separated):</label><br>
+        <input type="text" id="skills" name="skills" required><br><br>
+        
+        <label for="location">Job Location:</label><br>
+        <input type="text" id="location" name="location" required><br><br>
+        
+        <label for="experience">Experience Level:</label><br>
+        <input type="text" id="experience" name="experience" required><br><br>
+        
+        <label for="description">Job Description:</label><br>
+        <textarea id="description" name="description" required></textarea><br><br>
+        
+        <button type="submit">Post Job</button>
+    </form>
+
+    <h2>Job Listings</h2>
+    <div id="jobListings"></div>
+
+    <script>
+        document.getElementById('jobForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = {
+                title: document.getElementById('title').value,
+                company: document.getElementById('company').value,
+                skills: document.getElementById('skills').value.split(',').map(skill => skill.trim()),
+                location: document.getElementById('location').value,
+                experience: document.getElementById('experience').value,
+                description: document.getElementById('description').value,
+            };
+
+            fetch('/api/job', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Job posted successfully!');
+                loadJobs();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error posting job.');
+            });
+        });
+
+        function loadJobs() {
+            fetch('/api/jobs')
+            .then(response => response.json())
+            .then(data => {
+                const jobListings = document.getElementById('jobListings');
+                jobListings.innerHTML = '';
+                data.forEach(job => {
+                    jobListings.innerHTML += `
+                        <div>
+                            <h3>${job.title}</h3>
+                            <p><strong>Company:</strong> ${job.company}</p>
+                            <p><strong>Skills:</strong> ${job.skills.join(', ')}</p>
+                            <p><strong>Location:</strong> ${job.location}</p>
+                            <p><strong>Experience:</strong> ${job.experience}</p>
+                            <p><strong>Description:</strong> ${job.description}</p>
+                        </div>
+                        <hr>
+                    `;
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadJobs();
+        });
+    </script>
+</body>
+</html>
